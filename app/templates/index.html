@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invoice &rarr; Bill</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        max-width: 720px;
+        margin: 3rem auto;
+        padding: 0 1.25rem;
+        color: #1a1a1a;
+        line-height: 1.55;
+      }
+      h1 { margin-bottom: 0.25rem; }
+      .sub { color: #666; margin-top: 0; }
+      ol { padding-left: 1.25rem; }
+      .status { margin-top: 2rem; border-top: 1px solid #eee; padding-top: 1rem; }
+      .pill {
+        display: inline-block;
+        padding: 0.1rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .ok { background: #e6f5ea; color: #1a7f37; }
+      .missing { background: #fdeaea; color: #b42318; }
+      code { background: #f4f4f5; padding: 0.1rem 0.35rem; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>Invoice &rarr; Bill</h1>
+    <p class="sub">Read vendor invoice PDFs and create Bills in QuickBooks Online.</p>
+
+    <p>Milestone 1 skeleton is running. The full flow will be:</p>
+    <ol>
+      <li>Upload a vendor invoice PDF</li>
+      <li>Extract the text (pdfplumber)</li>
+      <li>Claude parses vendor, dates, and line items into structured JSON</li>
+      <li>You review and edit the data on a form</li>
+      <li>Confirm &rarr; a Bill is created in QuickBooks Online</li>
+    </ol>
+
+    <div class="status">
+      <h3>Configuration</h3>
+      <p>
+        QuickBooks credentials:
+        {% if status.quickbooks_configured %}
+          <span class="pill ok">configured</span>
+        {% else %}
+          <span class="pill missing">not set</span> &mdash; fill in <code>.env</code>
+        {% endif %}
+      </p>
+      <p>
+        Anthropic API key:
+        {% if status.anthropic_configured %}
+          <span class="pill ok">configured</span>
+        {% else %}
+          <span class="pill missing">not set</span> &mdash; fill in <code>.env</code>
+        {% endif %}
+      </p>
+      <p>QuickBooks environment: <code>{{ status.environment }}</code></p>
+    </div>
+  </body>
+</html>
