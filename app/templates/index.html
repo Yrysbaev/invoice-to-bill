@@ -16,51 +16,89 @@
       h1 { margin-bottom: 0.25rem; }
       .sub { color: #666; margin-top: 0; }
       ol { padding-left: 1.25rem; }
-      .status { margin-top: 2rem; border-top: 1px solid #eee; padding-top: 1rem; }
+      .card { margin-top: 1.75rem; border: 1px solid #eee; border-radius: 10px; padding: 1rem 1.25rem; }
       .pill {
-        display: inline-block;
-        padding: 0.1rem 0.55rem;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        font-weight: 600;
+        display: inline-block; padding: 0.1rem 0.55rem; border-radius: 999px;
+        font-size: 0.8rem; font-weight: 600;
       }
       .ok { background: #e6f5ea; color: #1a7f37; }
       .missing { background: #fdeaea; color: #b42318; }
       code { background: #f4f4f5; padding: 0.1rem 0.35rem; border-radius: 4px; }
+      .btn {
+        display: inline-block; padding: 0.5rem 0.9rem; border-radius: 8px;
+        border: 1px solid #d0d0d5; background: #fff; color: #1a1a1a;
+        text-decoration: none; font-size: 0.9rem; cursor: pointer;
+      }
+      .btn.primary { background: #2ca01c; border-color: #2ca01c; color: #fff; }
+      .btn.danger { color: #b42318; border-color: #eecccc; }
+      .row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+      .flash { padding: 0.6rem 0.9rem; border-radius: 8px; margin-bottom: 0.5rem; }
+      .flash.success { background: #e6f5ea; color: #1a7f37; }
+      .flash.error { background: #fdeaea; color: #b42318; }
+      .muted { color: #777; font-size: 0.9rem; }
     </style>
   </head>
   <body>
     <h1>Invoice &rarr; Bill</h1>
     <p class="sub">Read vendor invoice PDFs and create Bills in QuickBooks Online.</p>
 
-    <p>Milestone 1 skeleton is running. The full flow will be:</p>
-    <ol>
-      <li>Upload a vendor invoice PDF</li>
-      <li>Extract the text (pdfplumber)</li>
-      <li>Claude parses vendor, dates, and line items into structured JSON</li>
-      <li>You review and edit the data on a form</li>
-      <li>Confirm &rarr; a Bill is created in QuickBooks Online</li>
-    </ol>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-    <div class="status">
-      <h3>Configuration</h3>
-      <p>
-        QuickBooks credentials:
-        {% if status.quickbooks_configured %}
-          <span class="pill ok">configured</span>
-        {% else %}
-          <span class="pill missing">not set</span> &mdash; fill in <code>.env</code>
-        {% endif %}
-      </p>
-      <p>
-        Anthropic API key:
+    <div class="card">
+      <h3 style="margin-top:0">QuickBooks connection</h3>
+
+      {% if not status.quickbooks_configured %}
+        <p><span class="pill missing">not configured</span></p>
+        <p class="muted">Fill in <code>QB_CLIENT_ID</code>, <code>QB_CLIENT_SECRET</code>,
+          and <code>QB_REDIRECT_URI</code> in <code>.env</code>, then reload.</p>
+      {% elif connection %}
+        <p><span class="pill ok">connected</span></p>
+        <p class="muted">
+          Company (realm) id: <code>{{ connection.realm_id }}</code><br />
+          Access token valid until: <code>{{ connection.access_expires }}</code>
+          {% if connection.refresh_expired %}
+            &mdash; <span class="pill missing">refresh token expired, reconnect</span>
+          {% endif %}
+        </p>
+        <div class="row">
+          <a class="btn" href="{{ url_for('main.test_connection') }}">Test connection</a>
+          <a class="btn" href="{{ url_for('main.connect') }}">Reconnect</a>
+          <form method="post" action="{{ url_for('main.disconnect') }}" style="display:inline">
+            <button class="btn danger" type="submit">Disconnect</button>
+          </form>
+        </div>
+      {% else %}
+        <p><span class="pill missing">not connected</span></p>
+        <div class="row">
+          <a class="btn primary" href="{{ url_for('main.connect') }}">Connect to QuickBooks</a>
+        </div>
+      {% endif %}
+
+      <p class="muted" style="margin-bottom:0">Environment: <code>{{ status.environment }}</code>
+        &middot; Anthropic key:
         {% if status.anthropic_configured %}
           <span class="pill ok">configured</span>
         {% else %}
-          <span class="pill missing">not set</span> &mdash; fill in <code>.env</code>
+          <span class="pill missing">not set</span>
         {% endif %}
       </p>
-      <p>QuickBooks environment: <code>{{ status.environment }}</code></p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">The flow (coming in later milestones)</h3>
+      <ol>
+        <li>Upload a vendor invoice PDF</li>
+        <li>Extract the text (pdfplumber)</li>
+        <li>Claude parses vendor, dates, and line items into structured JSON</li>
+        <li>You review and edit the data on a form</li>
+        <li>Confirm &rarr; a Bill is created in QuickBooks Online</li>
+      </ol>
     </div>
   </body>
 </html>
